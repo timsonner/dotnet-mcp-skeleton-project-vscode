@@ -1,0 +1,22 @@
+# .gitignore for .NET projects
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+# Rider
+.idea/
+*.sln.iml
+# VS Code
+.vscode/
+# Build results
+[Dd]ebug/
+[Rr]elease/
+# NuGet
+*.nupkg
+# Others
+*.log
+*.DS_Store
+*.env
