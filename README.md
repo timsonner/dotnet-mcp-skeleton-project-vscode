@@ -35,6 +35,7 @@ mkdir -p .vscode && touch .vscode/mcp.json
 ```
 
 This file contains environmental variables and a reference to the main project file.
+Note: Environmental variables are not a requirement, but there as deomonstration.
 
 Modify the path to point to the `.csproj` file in the project root
 
@@ -59,7 +60,7 @@ Modify the path to point to the `.csproj` file in the project root
 ```
 
 ### Add Program.cs
-Program.cs is the main entry point for the application and acts as the server. This file is what starts the MCP server and keeps it running, handling requests. It sets up a host, configures logging, registers the MCP server and tools.
+`Program.cs` is the main entry point for the application and acts as the server. This file is what starts the MCP server and keeps it running, handling requests. It sets up a host, configures logging, registers the MCP server and tools.
 
 `Program.cs`
 ```c#
