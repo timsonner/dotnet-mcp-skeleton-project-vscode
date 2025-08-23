@@ -22,10 +22,12 @@ dotnet add package Microsoft.Extensions.Hosting
 cd <project name>
 mkdir -p .vscode && touch .vscode/mcp.json
 ```
-Modify path to .csproj file
+
 This file contains environmental variables and a reference to the main project file.
 
-mcp.json
+Modify the path to point to the `.csproj` file in the project root
+
+`mcp.json`
 ```json
 {
   "servers": {
@@ -48,7 +50,7 @@ mcp.json
 ### Add Program.cs
 Program.cs is the main entry point for the application and acts as the server. This file is what starts the MCP server and keeps it running, handling requests. It sets up a host, configures logging, registers the MCP server and tools.
 
-Program.cs
+`Program.cs`
 ```c#
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -79,4 +81,9 @@ await builder.Build().RunAsync();
     └── CharacterCreator.cs
 ```
 
-### Open mcp.json and start server
+### Tools
+The `CharacterCreator.cs` file is an example of MCP server tools accesible to the agent. Add tools to the `Tools` folder using similar syntax.
+
+The `Program.cs` contains a reference to the `CharacterCreator` class in the `CharacterCreator.cs`
+
+### Open `mcp.json` and start server
