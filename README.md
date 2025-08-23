@@ -34,8 +34,9 @@ dotnet add package Microsoft.Extensions.Hosting
 mkdir -p .vscode && touch .vscode/mcp.json
 ```
 
-This file contains environmental variables and a reference to the main project file.
-Note: Environmental variables are not a requirement, but there as deomonstration.
+This file contains environmental variables and a reference to the main project file.  
+
+Note: Environmental variables are not a requirement, but here for demonstration. Use this for passing API key to a tool for example.
 
 Modify the path to point to the `.csproj` file in the project root
 
