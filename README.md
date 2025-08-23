@@ -4,6 +4,7 @@ Skeleton project for .NET Model Context Protocol server with VSCode
 ### Create new project
 ```bash
 dotnet new console -n <name of project>
+cd <project name>
 ```
 
 ### Install the ModelContextProtocol SDK
@@ -19,7 +20,6 @@ dotnet add package Microsoft.Extensions.Hosting
 
 ### Add MCP server
 ```
-cd <project name>
 mkdir -p .vscode && touch .vscode/mcp.json
 ```
 
