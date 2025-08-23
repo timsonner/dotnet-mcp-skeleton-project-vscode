@@ -87,3 +87,20 @@ The `CharacterCreator.cs` file is an example of MCP server tools accesible to th
 The `Program.cs` contains a reference to the `CharacterCreator` class in the `CharacterCreator.cs`
 
 ### Open `mcp.json` and start server
+
+### Sample output
+```
+lets build another character
+
+Ran get_random_character SkeletonMcpServer (MCP Server)
+Here is your random DnD character: Class: Rogue
+Stats (4d6 drop lowest):
+STR: 11
+DEX: 10
+CON: 12
+INT: 12
+WIS: 12
+CHA: 13
+
+Let me know if you want to generate another or add more details!
+```
