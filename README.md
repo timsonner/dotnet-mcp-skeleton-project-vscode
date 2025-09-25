@@ -1,17 +1,6 @@
 # dotnet-mcp-skeleton-project-vscode
 Skeleton project for .NET Model Context Protocol server with VSCode
 
-### Project structure
-```
-├── Program.cs
-├── README.md
-├── <project name>.csproj
-├── .vscode
-│   └── mcp.json
-└── Tools
-    └── CharacterCreator.cs
-```
-
 ### Create new project
 ```bash
 dotnet new console -n <name of project>
@@ -29,9 +18,21 @@ dotnet add package ModelContextProtocol --version 0.3.0-preview.4
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
-### Add MCP server
+### Add MCP server (make sure to put this in parent folder of project, above the project)
 ```
 mkdir -p .vscode && touch .vscode/mcp.json
+mv .vscode ..
+```
+
+### Project structure
+```
+.vscode
+│   └── mcp.json
+├── Program.cs
+├── README.md
+├── <project name>.csproj
+└── Tools
+    └── CharacterCreator.cs
 ```
 
 This file contains environmental variables and a reference to the main project file.  
