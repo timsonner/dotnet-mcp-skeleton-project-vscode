@@ -1,163 +1,124 @@
 # dotnet-mcp-skeleton-project-vscode
-Skeleton project for .NET Model Context Protocol server with VSCode
 
-### Create new project
+A .NET console app that hosts a [Model Context Protocol](https://modelcontextprotocol.io/) server on standard input and output. An MCP client starts the process and can call one tool, `get_random_character`, which returns a random class and six ability scores.
+
+`Program.cs` sends logs to standard error so they stay off the protocol stream on standard output.
+
+## Prerequisites
+
+The project file targets `net9.0`, so you need the .NET 9 SDK.
+
 ```bash
-dotnet new console -n <name of project>
-cd <project name>
+dotnet --version
 ```
 
-### Install the ModelContextProtocol SDK
-Note: This version is subject to change. Check most recent version at: https://www.nuget.org/packages/ModelContextProtocol/
+## Install, build, run, and test
+
+Run these from the repository root.
+
 ```bash
-dotnet add package ModelContextProtocol --version 0.3.0-preview.4
+dotnet restore
+dotnet build
+dotnet run --project dotnet-mcp-skeleton-project-vscode.csproj
 ```
 
-### Install Hosting package
+`dotnet run` starts the server and waits for newline-delimited JSON-RPC on standard input. It does not print a prompt. Stop it with Ctrl+C.
+
+This repository has no test project. `dotnet test` restores and builds the app, then exits without running tests:
+
 ```bash
-dotnet add package Microsoft.Extensions.Hosting
+dotnet test
 ```
 
-### Add MCP server (make sure to put this in parent folder of project, above the project)
+## Usage
+
+After the client sends `initialize`, `tools/list` returns one tool:
+
+| Field | Value |
+| --- | --- |
+| Name | `get_random_character` |
+| Description | `Generates a DnD character with randomclass and base stats.` |
+| Arguments | none |
+
+`Tools/CharacterCreator.cs` implements it as `GetRandomCharacter`. The method:
+
+1. Picks one class.
+2. Rolls Strength, Dexterity, Constitution, Intelligence, Wisdom, and Charisma.
+3. Scores each ability as the sum of the highest three of four six-sided dice (4d6 drop lowest).
+
+Class names come from the `PLAYER_CLASS` environment variable, a comma-separated list. Each entry is trimmed. If `PLAYER_CLASS` is missing or blank, the tool uses:
+
+```text
+Warrior, Mage, Rogue, Paladin, Cleric, Ranger, Bard, Barbarian, Druid, Monk, Sorcerer, Warlock
 ```
-mkdir -p .vscode && touch .vscode/mcp.json
-mv .vscode ..
+
+Start the server with a shorter list:
+
+```bash
+PLAYER_CLASS="Warrior, Mage, Rogue, Paladin" dotnet run --project dotnet-mcp-skeleton-project-vscode.csproj
 ```
 
-### Project structure
-```
-.vscode
-│   └── mcp.json
-├── Program.cs
-├── README.md
-├── <project name>.csproj
-└── Tools
-    └── CharacterCreator.cs
+A `tools/call` request has no arguments:
+
+```json
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_random_character","arguments":{}}}
 ```
 
-This file contains environmental variables and a reference to the main project file.  
+The text result looks like this. The class and scores change on each call:
 
-Note: Environmental variables are not a requirement, but here for demonstration. Use this for passing API key to a tool for example.
+```text
+Your random DnD character:
+Class: Mage
+Stats (4d6 drop lowest):
+STR: 14
+DEX: 13
+CON: 10
+INT: 11
+WIS: 13
+CHA: 13
+```
 
-Modify the path to point to the `.csproj` file in the project root
+`initialize` reports the server name `dotnet-mcp-skeleton-project-vscode` and version `1.0.0.0`. The project file does not set an assembly version, so that version is the runtime default.
 
-`mcp.json`
+### VS Code
+
+`.gitignore` ignores `.vscode/`, so this repository does not include a client config. To launch the server from VS Code, create `.vscode/mcp.json` with a top-level `servers` entry ([MCP configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration)):
+
 ```json
 {
   "servers": {
-    "SkeletonMcpServer": {
+    "dotnet-mcp-skeleton-project-vscode": {
       "type": "stdio",
       "command": "dotnet",
       "args": [
         "run",
         "--project",
-        "./<name of project>.csproj"
+        "./dotnet-mcp-skeleton-project-vscode.csproj"
       ],
-        "env": {
-          "PLAYER_CLASS": "Warrior, Mage, Rogue, Paladin"
-        }
+      "env": {
+        "PLAYER_CLASS": "Warrior, Mage, Rogue, Paladin"
+      }
     }
   }
 }
 ```
 
-### Add Program.cs
-`Program.cs` is the main entry point for the application and acts as the server. This file is what starts the MCP server and keeps it running, handling requests. It sets up a host, configures logging, registers the MCP server and tools.
+`env` is optional. Leave it out to use the built-in class list. Because `.vscode/` is ignored, this file stays on your machine unless you change `.gitignore`.
 
-`Program.cs`
-```c#
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+## Layout
 
-var builder = Host.CreateApplicationBuilder(args);
-
-// Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
-builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
-
-// Add the MCP services: the transport to use (stdio) and the tools to register.
-builder.Services
-    .AddMcpServer()
-    .WithStdioServerTransport()
-    .WithTools<CharacterCreator>();
-
-await builder.Build().RunAsync();
-```
-The `Program.cs` contains a reference to the `CharacterCreator` class in the `CharacterCreator.cs` Tool
-
-### Create Tools for MCP server
-```
-mkdir -p Tools && touch CharacterCreator.cs
+```text
+.gitignore
+dotnet-mcp-skeleton-project-vscode.csproj
+Program.cs
+README.md
+Tools/CharacterCreator.cs
 ```
 
-The `CharacterCreator.cs` file is an example of MCP server tools accesible to the agent. Add tools to the `Tools` folder using similar syntax.
+- `Program.cs` builds a generic host, registers a stdio MCP server, and adds `CharacterCreator`.
+- `Tools/CharacterCreator.cs` defines the only tool.
+- `dotnet-mcp-skeleton-project-vscode.csproj` references `ModelContextProtocol` 0.3.0-preview.4 and `Microsoft.Extensions.Hosting` 9.0.8.
 
-`CharacterCreator.cs`
-```c#
-using System.ComponentModel;
-using ModelContextProtocol.Server;
+`dotnet build` writes `bin/` and `obj/`. Both are gitignored.
 
-internal class CharacterCreator
-{
-    [McpServerTool]
-    [Description("Generates a DnD character with randomclass and base stats.")]
-    public string GetRandomCharacter()
-    {
-        // Get random class from environment variable
-        var playerClass = Environment.GetEnvironmentVariable("PLAYER_CLASS");
-
-        // If environment variable is not set, use default classes
-        if (string.IsNullOrWhiteSpace(playerClass))
-        {
-            playerClass = "Warrior, Mage, Rogue, Paladin, Cleric, Ranger, Bard, Barbarian, Druid, Monk, Sorcerer, Warlock";
-        }
-        var classChoices = playerClass.Split(",");
-        var selectedClassIndex = Random.Shared.Next(0, classChoices.Length);
-        var chosenClass = classChoices[selectedClassIndex].Trim();
-
-        // Get random stats
-        int[] RollStat()
-        {
-            var rolls = new int[4]; // Create an array to hold 4 dice rolls.
-            for (int i = 0; i < 4; i++) // Number of rolls (four rolls 0-3)
-                rolls[i] = Random.Shared.Next(1, 7); // Roll a 6-sided die (1–6)
-            Array.Sort(rolls); // Sort rolls in ascending order.
-            return new int[] { rolls[1], rolls[2], rolls[3] }; // Return highest three rolls (drop the lowest).
-        }
-
-        string[] statNames = { "STR", "DEX", "CON", "INT", "WIS", "CHA" };
-        int[] stats = new int[6]; // Array to hold the six stat scores.
-        for (int i = 0; i < 6; i++) // Iterate over each stat score
-        {
-            var statRolls = RollStat(); // Perform 4 rolls for this stat
-            stats[i] = statRolls[0] + statRolls[1] + statRolls[2]; // Sum the highest three rolls
-        }
-
-        var result = $"Your random DnD character:\nClass: {chosenClass}\nStats (4d6 drop lowest):\n";
-        for (int i = 0; i < 6; i++)
-        {
-            result += $"{statNames[i]}: {stats[i]}\n";
-        }
-        return result.Trim();
-    }
-}
-```
-
-### Open `mcp.json` and start server
-
-### Sample output
-```
-lets build another character
-
-Ran get_random_character SkeletonMcpServer (MCP Server)
-Here is your random DnD character: Class: Rogue
-Stats (4d6 drop lowest):
-STR: 11
-DEX: 10
-CON: 12
-INT: 12
-WIS: 12
-CHA: 13
-
-Let me know if you want to generate another or add more details!
-```
+No license file is present.
